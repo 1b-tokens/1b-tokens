@@ -43,6 +43,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Fails fast if GitHub did not inject secrets (wrong env, empty value, etc.).
+      - name: Assert Clerk secrets are non-empty
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        run: |
+          if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
+            echo "::error::NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is empty for this job (check Prod environment secrets)."
+            exit 1
+          fi
+          if [ -z "$CLERK_SECRET_KEY" ]; then
+            echo "::error::CLERK_SECRET_KEY is empty for this job (check Prod environment secrets)."
+            exit 1
+          fi
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -58,25 +73,35 @@ jobs:
       - name: Build and push image
         env:
           IMAGE: ${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL }}" \
-            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
-            --tag "${IMAGE}" \
+            --build-arg "NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL" \
+            --build-arg "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+            --tag "$IMAGE" \
             .
-          docker push "${IMAGE}"
+          docker push "$IMAGE"
 
       # Runtime env: GitHub Prod → secrets (API keys) + variables (e.g. SENDGRID_FROM_EMAIL).
       - name: Deploy Cloud Run service
         env:
           IMAGE: ${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SENDGRID_FROM_EMAIL: ${{ vars.SENDGRID_FROM_EMAIL }}
+          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
         run: |
           gcloud run deploy "${{ vars.CLOUD_RUN_SERVICE }}" \
             --project="${{ vars.GCP_PROJECT_ID }}" \
             --region="${{ vars.CLOUD_RUN_REGION }}" \
             --platform=managed \
-            --image="${IMAGE}" \
+            --image="$IMAGE" \
             --service-account="${{ vars.RUNTIME_SERVICE_ACCOUNT }}" \
             --allow-unauthenticated \
             --port=8080 \
-            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }},NEXT_PUBLIC_APP_URL=${{ vars.NEXT_PUBLIC_SITE_URL }},NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }},CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }},SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }},SENDGRID_FROM_EMAIL=${{ vars.SENDGRID_FROM_EMAIL }},ADMIN_EMAIL=${{ vars.ADMIN_EMAIL }}"
+            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL},NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_SITE_URL},NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY},CLERK_SECRET_KEY=${CLERK_SECRET_KEY},SUPABASE_URL=${SUPABASE_URL},SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY},SENDGRID_API_KEY=${SENDGRID_API_KEY},SENDGRID_FROM_EMAIL=${SENDGRID_FROM_EMAIL},ADMIN_EMAIL=${ADMIN_EMAIL}"
