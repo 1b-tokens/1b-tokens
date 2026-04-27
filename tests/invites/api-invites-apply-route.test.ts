@@ -28,6 +28,7 @@ const validBody = {
   projects_description: "Building agentic workflows end to end.",
   linkedin_url: "https://www.linkedin.com/in/me",
   tshirt_size: "L",
+  merch_gender: "unisex",
 };
 
 describe("POST /api/invites/[token]/apply", () => {

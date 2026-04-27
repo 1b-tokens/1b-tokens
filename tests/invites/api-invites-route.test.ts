@@ -166,6 +166,7 @@ describe("POST /api/invites", () => {
       expect.objectContaining({
         to: "invitee@example.com",
         inviteeName: "Invitee Person",
+        pitch: "x".repeat(20),
       }),
     );
   });

@@ -12,6 +12,7 @@ const validBase = {
   projects_description: "Shipping LLM workflows to production.",
   linkedin_url: "https://www.linkedin.com/in/example",
   tshirt_size: "M",
+  merch_gender: "unisex",
 };
 
 describe("parseApplicationBody", () => {
@@ -21,6 +22,7 @@ describe("parseApplicationBody", () => {
     if (!r.ok) return;
     expect(r.value.phone_country_code).toBe("+420");
     expect(r.value.tshirt_size).toBe("M");
+    expect(r.value.merch_gender).toBe("unisex");
   });
 
   it("allows optional address line 2", () => {
@@ -71,5 +73,15 @@ describe("parseApplicationBody", () => {
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.error).toContain("T-shirt");
+  });
+
+  it("rejects invalid merch gender", () => {
+    const r = parseApplicationBody({
+      ...validBase,
+      merch_gender: "kids",
+    });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.error).toContain("merch");
   });
 });

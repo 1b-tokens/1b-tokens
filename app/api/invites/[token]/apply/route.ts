@@ -62,6 +62,7 @@ export async function POST(
     projects_description,
     linkedin_url,
     tshirt_size,
+    merch_gender,
   } = parsed.value;
 
   const supabase = createAdminClient();
@@ -108,6 +109,7 @@ export async function POST(
     projects_description,
     linkedin_url,
     tshirt_size,
+    merch_gender,
   });
 
   if (appError) {
@@ -139,6 +141,7 @@ export async function POST(
       applicantClerkUserId: userId,
       applicantEmail,
       tshirtSize: tshirt_size,
+      merchGender: merch_gender,
       linkedinUrl: linkedin_url,
       projectsDescription: projects_description,
     });

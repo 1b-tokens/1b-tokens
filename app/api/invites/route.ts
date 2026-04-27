@@ -102,6 +102,7 @@ export async function POST(request: Request) {
       to: normalized,
       inviteeName: fullName,
       inviterDisplayName,
+      pitch,
       token,
     });
   } catch (err) {

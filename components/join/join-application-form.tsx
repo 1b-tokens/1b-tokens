@@ -3,8 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import {
+  MERCH_GENDER_LABELS,
+  MERCH_GENDERS,
+  TSHIRT_SIZES,
+} from "@/lib/invites/constants";
 import { PHONE_COUNTRY_PREFIXES } from "@/lib/phone-country-codes";
-import { TSHIRT_SIZES } from "@/lib/invites/constants";
 
 export function JoinApplicationForm(props: { token: string }) {
   const router = useRouter();
@@ -43,8 +47,8 @@ export function JoinApplicationForm(props: { token: string }) {
         Tell us how to reach you
       </h2>
       <p className="mt-4 text-sm font-medium leading-relaxed text-midnight/72">
-        We use this for welcome merch and urgent event logistics only. Be
-        precise — customs and couriers are unforgiving.
+        We use your answers for the welcome drop, event logistics, and staying in
+        touch. Only the club run team sees this information.
       </p>
 
       <form
@@ -54,6 +58,47 @@ export function JoinApplicationForm(props: { token: string }) {
           await submitForm(new FormData(event.currentTarget));
         }}
       >
+        <div className="grid gap-2">
+          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-midnight/55">
+            T-shirt size (welcome drop)
+          </label>
+          <select
+            name="tshirt_size"
+            required
+            defaultValue="M"
+            className="border border-midnight/15 bg-white px-3 py-2 text-sm text-midnight outline-none ring-orange focus:ring-2"
+          >
+            {TSHIRT_SIZES.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid gap-2">
+          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-midnight/55">
+            Merch gender (fit)
+          </label>
+          <select
+            name="merch_gender"
+            required
+            defaultValue="unisex"
+            className="border border-midnight/15 bg-white px-3 py-2 text-sm text-midnight outline-none ring-orange focus:ring-2"
+          >
+            {MERCH_GENDERS.map((g) => (
+              <option key={g} value={g}>
+                {MERCH_GENDER_LABELS[g]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <p className="text-sm font-medium leading-relaxed text-midnight/80">
+          We need your address to ship the welcome merch. Be precise — customs
+          and couriers are unforgiving.
+        </p>
+
         <div className="grid gap-2">
           <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-midnight/55">
             Street address line 1
@@ -123,7 +168,7 @@ export function JoinApplicationForm(props: { token: string }) {
               className="border border-midnight/15 bg-white px-3 py-2 text-sm text-midnight outline-none ring-orange focus:ring-2"
             >
               {PHONE_COUNTRY_PREFIXES.map((p) => (
-                <option key={p.value} value={p.value}>
+                <option key={p.iso2} value={p.value}>
                   {p.label}
                 </option>
               ))}
@@ -168,24 +213,6 @@ export function JoinApplicationForm(props: { token: string }) {
             placeholder="https://www.linkedin.com/in/your-handle"
             className="border border-midnight/15 bg-white px-3 py-2 text-sm text-midnight outline-none ring-orange focus:ring-2"
           />
-        </div>
-
-        <div className="grid gap-2">
-          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-midnight/55">
-            T-shirt size (welcome drop)
-          </label>
-          <select
-            name="tshirt_size"
-            required
-            defaultValue="M"
-            className="border border-midnight/15 bg-white px-3 py-2 text-sm text-midnight outline-none ring-orange focus:ring-2"
-          >
-            {TSHIRT_SIZES.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
         </div>
 
         {error ? (

@@ -1,31 +1,25 @@
-export const PHONE_COUNTRY_PREFIXES = [
-  { value: "+1", label: "United States / Canada (+1)" },
-  { value: "+44", label: "United Kingdom (+44)" },
-  { value: "+353", label: "Ireland (+353)" },
-  { value: "+420", label: "Czechia (+420)" },
-  { value: "+48", label: "Poland (+48)" },
-  { value: "+386", label: "Slovenia (+386)" },
-  { value: "+385", label: "Croatia (+385)" },
-  { value: "+49", label: "Germany (+49)" },
-  { value: "+43", label: "Austria (+43)" },
-  { value: "+33", label: "France (+33)" },
-  { value: "+39", label: "Italy (+39)" },
-  { value: "+34", label: "Spain (+34)" },
-  { value: "+31", label: "Netherlands (+31)" },
-  { value: "+32", label: "Belgium (+32)" },
-  { value: "+41", label: "Switzerland (+41)" },
-  { value: "+46", label: "Sweden (+46)" },
-  { value: "+47", label: "Norway (+47)" },
-  { value: "+45", label: "Denmark (+45)" },
-  { value: "+358", label: "Finland (+358)" },
-  { value: "+61", label: "Australia (+61)" },
-  { value: "+64", label: "New Zealand (+64)" },
-  { value: "+81", label: "Japan (+81)" },
-  { value: "+82", label: "South Korea (+82)" },
-  { value: "+65", label: "Singapore (+65)" },
-  { value: "+971", label: "United Arab Emirates (+971)" },
-  { value: "+27", label: "South Africa (+27)" },
-  { value: "+55", label: "Brazil (+55)" },
-  { value: "+52", label: "Mexico (+52)" },
-  { value: "+91", label: "India (+91)" },
-] as const;
+import { allCountries } from "country-telephone-data";
+
+export type PhoneCountryPrefix = {
+  /** E.164 country calling code, e.g. +420 (may repeat across rows, e.g. +1 for US and Canada). */
+  value: string;
+  /** Country name and code for the dropdown. */
+  label: string;
+  /** ISO 3166-1 alpha-2 — unique for React `key` and one row per territory. */
+  iso2: string;
+};
+
+const rows: PhoneCountryPrefix[] = allCountries
+  .map((c) => {
+    const dial = `+${c.dialCode}`;
+    return { value: dial, label: `${c.name} (${dial})`, iso2: c.iso2.toLowerCase() };
+  })
+  .sort((a, b) => a.label.localeCompare(b.label, "en"));
+
+/** All territories from country-telephone-data, A–Z by display label. */
+export const PHONE_COUNTRY_PREFIXES: readonly PhoneCountryPrefix[] = rows;
+
+/** Set of every distinct calling code prefix the form may submit (e.g. "+1" once, not per country). */
+export const PHONE_COUNTRY_DIAL_SET = new Set(
+  allCountries.map((c) => `+${c.dialCode}`),
+);

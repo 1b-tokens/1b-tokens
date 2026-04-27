@@ -1,6 +1,8 @@
 import "server-only";
 
 import sgMail from "@sendgrid/mail";
+import { MERCH_GENDER_LABELS, type MerchGender } from "@/lib/invites/constants";
+import { sendGridFrom } from "@/lib/sendgrid-from";
 
 function escapeHtml(value: string) {
   return value
@@ -28,6 +30,7 @@ export type ApplicationSubmittedAdminEmailParams = {
   applicantClerkUserId: string;
   applicantEmail: string;
   tshirtSize: string;
+  merchGender: MerchGender;
   linkedinUrl: string;
   projectsDescription: string;
 };
@@ -61,7 +64,7 @@ export async function sendApplicationSubmittedAdminEmail(
 
   await sgMail.send({
     to: adminTo,
-    from,
+    from: sendGridFrom(from),
     subject: `New application: ${params.inviteeFullName}`,
     html: `
       <p>A member completed their <strong>1B Tokens Club</strong> application.</p>
@@ -72,6 +75,7 @@ export async function sendApplicationSubmittedAdminEmail(
         <li><strong>Inviter Clerk user:</strong> ${escapeHtml(params.inviterClerkUserId)}</li>
         <li><strong>Invite id:</strong> ${escapeHtml(params.inviteId)}</li>
         <li><strong>T-shirt:</strong> ${escapeHtml(params.tshirtSize)}</li>
+        <li><strong>Merch gender:</strong> ${escapeHtml(MERCH_GENDER_LABELS[params.merchGender])}</li>
         <li><strong>LinkedIn:</strong> ${escapeHtml(params.linkedinUrl)}</li>
       </ul>
       <p><strong>Projects (preview)</strong></p>

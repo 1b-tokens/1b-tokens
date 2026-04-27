@@ -1,10 +1,6 @@
-import type { TshirtSize } from "@/lib/invites/constants";
-import { TSHIRT_SIZES } from "@/lib/invites/constants";
-import { PHONE_COUNTRY_PREFIXES } from "@/lib/phone-country-codes";
-
-const allowedPrefixes = new Set(
-  PHONE_COUNTRY_PREFIXES.map((p) => p.value as string),
-);
+import type { MerchGender, TshirtSize } from "@/lib/invites/constants";
+import { MERCH_GENDERS, TSHIRT_SIZES } from "@/lib/invites/constants";
+import { PHONE_COUNTRY_DIAL_SET } from "@/lib/phone-country-codes";
 
 export type ParsedApplicationBody = {
   shipping_address_line1: string;
@@ -17,6 +13,7 @@ export type ParsedApplicationBody = {
   projects_description: string;
   linkedin_url: string;
   tshirt_size: TshirtSize;
+  merch_gender: MerchGender;
 };
 
 function readString(value: unknown) {
@@ -45,6 +42,18 @@ export function parseApplicationBody(body: unknown) {
   const projects_description = readString(b.projects_description);
   const linkedin_url = readString(b.linkedin_url);
   const tshirt_size = readString(b.tshirt_size);
+  const merch_gender = readString(b.merch_gender);
+
+  if (!TSHIRT_SIZES.includes(tshirt_size as TshirtSize)) {
+    return { ok: false as const, error: "Invalid T-shirt size." };
+  }
+
+  if (!MERCH_GENDERS.includes(merch_gender as MerchGender)) {
+    return {
+      ok: false as const,
+      error: "Select a merch gender (male, female, or unisex).",
+    };
+  }
 
   if (!shipping_address_line1 || !shipping_city || !shipping_postal_code) {
     return {
@@ -57,7 +66,7 @@ export function parseApplicationBody(body: unknown) {
     return { ok: false as const, error: "Shipping country is required." };
   }
 
-  if (!allowedPrefixes.has(phone_country_code)) {
+  if (!PHONE_COUNTRY_DIAL_SET.has(phone_country_code)) {
     return {
       ok: false as const,
       error: "Select a valid phone country prefix.",
@@ -86,10 +95,6 @@ export function parseApplicationBody(body: unknown) {
     };
   }
 
-  if (!TSHIRT_SIZES.includes(tshirt_size as TshirtSize)) {
-    return { ok: false as const, error: "Invalid T-shirt size." };
-  }
-
   return {
     ok: true as const,
     value: {
@@ -103,6 +108,7 @@ export function parseApplicationBody(body: unknown) {
       projects_description,
       linkedin_url,
       tshirt_size: tshirt_size as TshirtSize,
+      merch_gender: merch_gender as MerchGender,
     } satisfies ParsedApplicationBody,
   };
 }

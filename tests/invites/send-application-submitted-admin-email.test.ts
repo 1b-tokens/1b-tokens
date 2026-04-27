@@ -21,6 +21,7 @@ const baseParams = {
   applicantClerkUserId: "user_applicant",
   applicantEmail: "alex@example.com",
   tshirtSize: "M",
+  merchGender: "unisex" as const,
   linkedinUrl: "https://www.linkedin.com/in/alex",
   projectsDescription: "Shipping agents to prod.",
 };
@@ -55,9 +56,14 @@ describe("sendApplicationSubmittedAdminEmail", () => {
     expect(sgMail.send).toHaveBeenCalledOnce();
     const arg = vi.mocked(sgMail.send).mock.calls[0][0] as {
       to: string;
+      from: { name: string; email: string };
       subject: string;
     };
     expect(arg.to).toBe("admin@example.com");
+    expect(arg.from).toEqual({
+      name: "1B Tokens",
+      email: "from@example.com",
+    });
     expect(arg.subject).toContain("Alex Builder");
   });
 });
