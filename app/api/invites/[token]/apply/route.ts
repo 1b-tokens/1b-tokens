@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { getInviterNameAndEmail } from "@/lib/invites/get-inviter-name-and-email";
 import { normalizeEmail } from "@/lib/invites/normalize-email";
 import { parseApplicationBody } from "@/lib/invites/parse-application-body";
 import { sendApplicationSubmittedAdminEmail } from "@/lib/invites/send-application-submitted-admin-email";
@@ -70,7 +71,7 @@ export async function POST(
   const { data: invite, error: inviteError } = await supabase
     .from("invites")
     .select(
-      "id, invitee_email, invitee_full_name, inviter_clerk_user_id, status, token",
+      "id, invitee_email, invitee_full_name, inviter_clerk_user_id, status, token, pitch",
     )
     .eq("token", token)
     .maybeSingle();
@@ -132,17 +133,26 @@ export async function POST(
   }
 
   try {
+    const { name: inviterName, email: inviterEmail } =
+      await getInviterNameAndEmail(invite.inviter_clerk_user_id);
     await sendApplicationSubmittedAdminEmail({
-      inviteId: invite.id,
-      inviteToken: token,
+      inviterName,
+      inviterEmail,
+      inviterAboutJoiner: invite.pitch,
       inviteeFullName: invite.invitee_full_name,
       inviteeEmail: invite.invitee_email,
-      inviterClerkUserId: invite.inviter_clerk_user_id,
-      applicantClerkUserId: userId,
-      applicantEmail,
+      phoneCountryCode: phone_country_code,
+      phoneNumber: phone_number,
+      linkedinUrl: linkedin_url,
+      shipping: {
+        line1: shipping_address_line1,
+        line2: shipping_address_line2,
+        city: shipping_city,
+        postal: shipping_postal_code,
+        country: shipping_country,
+      },
       tshirtSize: tshirt_size,
       merchGender: merch_gender,
-      linkedinUrl: linkedin_url,
       projectsDescription: projects_description,
     });
   } catch {

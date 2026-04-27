@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/invites/get-inviter-name-and-email", () => ({
+  getInviterNameAndEmail: vi.fn().mockResolvedValue({
+    name: "Pat Inviter",
+    email: "sponsor@example.com",
+  }),
+}));
+
 vi.mock("@clerk/nextjs/server", () => ({
   auth: vi.fn(),
   currentUser: vi.fn(),
@@ -114,6 +121,7 @@ describe("POST /api/invites/[token]/apply", () => {
                       inviter_clerk_user_id: "user_inviter",
                       token: "tok",
                       status: "pending",
+                      pitch: "A strong builder; deserves a seat.",
                     },
                     error: null,
                   }),
@@ -150,10 +158,21 @@ describe("POST /api/invites/[token]/apply", () => {
     expect(updateEqMock).toHaveBeenCalled();
     expect(sendApplicationSubmittedAdminEmail).toHaveBeenCalledWith(
       expect.objectContaining({
-        inviteId: "inv-1",
-        inviteToken: "tok",
+        inviterName: "Pat Inviter",
+        inviterEmail: "sponsor@example.com",
+        inviterAboutJoiner: "A strong builder; deserves a seat.",
         inviteeFullName: "Invited Person",
-        applicantEmail: "invited@example.com",
+        inviteeEmail: "invited@example.com",
+        phoneCountryCode: "+420",
+        phoneNumber: "777123456",
+        shipping: {
+          line1: "1 Lane",
+          line2: undefined,
+          city: "City",
+          postal: "12345",
+          country: "CZ",
+        },
+        projectsDescription: validBody.projects_description,
       }),
     );
   });

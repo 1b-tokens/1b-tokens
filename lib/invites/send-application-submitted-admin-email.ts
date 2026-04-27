@@ -12,28 +12,48 @@ function escapeHtml(value: string) {
     .replaceAll('"', "&quot;");
 }
 
-function getAppOrigin() {
-  const explicit = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
-  if (explicit) return explicit;
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
+function emailAsHtmlLinkOrText(email: string) {
+  const safe = email.trim();
+  if (!safe.includes("@")) {
+    return escapeHtml(safe);
   }
-  return "http://localhost:3000";
+  return `<a href="mailto:${escapeHtml(safe)}">${escapeHtml(safe)}</a>`;
 }
 
 export type ApplicationSubmittedAdminEmailParams = {
-  inviteId: string;
-  inviteToken: string;
+  inviterName: string;
+  inviterEmail: string;
+  /** Pitch the inviter wrote when sending the invite (why this person is a fit). */
+  inviterAboutJoiner: string;
   inviteeFullName: string;
   inviteeEmail: string;
-  inviterClerkUserId: string;
-  applicantClerkUserId: string;
-  applicantEmail: string;
+  phoneCountryCode: string;
+  phoneNumber: string;
+  linkedinUrl: string;
+  shipping: {
+    line1: string;
+    line2: string | null | undefined;
+    city: string;
+    postal: string;
+    country: string;
+  };
   tshirtSize: string;
   merchGender: MerchGender;
-  linkedinUrl: string;
   projectsDescription: string;
 };
+
+function formatPhoneDisplay(countryCode: string, number: string) {
+  return `${countryCode} ${number}`.trim();
+}
+
+function formatShippingAsHtml(ship: ApplicationSubmittedAdminEmailParams["shipping"]) {
+  const line2 = ship.line2?.trim();
+  const cityLine = [ship.postal, ship.city].filter(Boolean).join(" ");
+  const parts = [ship.line1, line2, cityLine, ship.country].filter(
+    (p) => p && String(p).trim().length > 0,
+  ) as string[];
+  return parts.map((p) => escapeHtml(p)).join("<br />");
+}
 
 /**
  * Notifies ADMIN_EMAIL when an invitee completes their application.
@@ -56,11 +76,21 @@ export async function sendApplicationSubmittedAdminEmail(
 
   sgMail.setApiKey(apiKey);
 
-  const joinUrl = `${getAppOrigin()}/join/${params.inviteToken}`;
-  const projectsPreview =
-    params.projectsDescription.length > 400
-      ? `${params.projectsDescription.slice(0, 400)}…`
-      : params.projectsDescription;
+  const phoneDisplay = formatPhoneDisplay(
+    params.phoneCountryCode,
+    params.phoneNumber,
+  );
+  const inviterAboutHtml = escapeHtml(params.inviterAboutJoiner).replaceAll(
+    "\n",
+    "<br />",
+  );
+  const projectsHtml = escapeHtml(params.projectsDescription).replaceAll(
+    "\n",
+    "<br />",
+  );
+  const linkedinSafe = escapeHtml(params.linkedinUrl);
+  const shippingHtml = formatShippingAsHtml(params.shipping);
+  const merchGenderLabel = escapeHtml(MERCH_GENDER_LABELS[params.merchGender]);
 
   await sgMail.send({
     to: adminTo,
@@ -68,19 +98,29 @@ export async function sendApplicationSubmittedAdminEmail(
     subject: `New application: ${params.inviteeFullName}`,
     html: `
       <p>A member completed their <strong>1B Tokens Club</strong> application.</p>
+      <p><strong>Who invited</strong></p>
       <ul>
-        <li><strong>Invitee (invited as):</strong> ${escapeHtml(params.inviteeFullName)} — ${escapeHtml(params.inviteeEmail)}</li>
-        <li><strong>Applicant Clerk user:</strong> ${escapeHtml(params.applicantClerkUserId)}</li>
-        <li><strong>Applicant email (signed in):</strong> ${escapeHtml(params.applicantEmail)}</li>
-        <li><strong>Inviter Clerk user:</strong> ${escapeHtml(params.inviterClerkUserId)}</li>
-        <li><strong>Invite id:</strong> ${escapeHtml(params.inviteId)}</li>
-        <li><strong>T-shirt:</strong> ${escapeHtml(params.tshirtSize)}</li>
-        <li><strong>Merch gender:</strong> ${escapeHtml(MERCH_GENDER_LABELS[params.merchGender])}</li>
-        <li><strong>LinkedIn:</strong> ${escapeHtml(params.linkedinUrl)}</li>
+        <li><strong>Name:</strong> ${escapeHtml(params.inviterName)}</li>
+        <li><strong>Email:</strong> ${emailAsHtmlLinkOrText(params.inviterEmail)}</li>
       </ul>
-      <p><strong>Projects (preview)</strong></p>
-      <p>${escapeHtml(projectsPreview).replaceAll("\n", "<br />")}</p>
-      <p><a href="${joinUrl}">Open invite link</a> (submitted — thank-you state)</p>
+      <p><strong>What the inviter wrote about the new joiner</strong></p>
+      <p>${inviterAboutHtml}</p>
+      <p><strong>Who applied (invitee)</strong></p>
+      <ul>
+        <li><strong>Name:</strong> ${escapeHtml(params.inviteeFullName)}</li>
+        <li><strong>Email:</strong> ${emailAsHtmlLinkOrText(params.inviteeEmail)}</li>
+        <li><strong>Phone:</strong> ${escapeHtml(phoneDisplay)}</li>
+        <li><strong>LinkedIn:</strong> <a href="${linkedinSafe}">${linkedinSafe}</a></li>
+        <li><strong>Shipping address</strong><br />${shippingHtml}</li>
+      </ul>
+      <p><strong>Invitee</strong></p>
+      <p><em>What they wrote about their projects</em></p>
+      <p>${projectsHtml}</p>
+      <p><strong>Merch</strong></p>
+      <ul>
+        <li><strong>T-shirt size:</strong> ${escapeHtml(params.tshirtSize)}</li>
+        <li><strong>Gender:</strong> ${merchGenderLabel}</li>
+      </ul>
     `,
     trackingSettings: { clickTracking: { enable: false } },
   });

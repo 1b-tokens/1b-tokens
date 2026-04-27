@@ -13,16 +13,23 @@ import sgMail from "@sendgrid/mail";
 import { sendApplicationSubmittedAdminEmail } from "@/lib/invites/send-application-submitted-admin-email";
 
 const baseParams = {
-  inviteId: "inv-1",
-  inviteToken: "tok123",
+  inviterName: "Pat Inviter",
+  inviterEmail: "pat@example.com",
+  inviterAboutJoiner: "Alex is shipping real agents in production.",
   inviteeFullName: "Alex Builder",
   inviteeEmail: "alex@example.com",
-  inviterClerkUserId: "user_inviter",
-  applicantClerkUserId: "user_applicant",
-  applicantEmail: "alex@example.com",
+  phoneCountryCode: "+420",
+  phoneNumber: "777123456",
+  linkedinUrl: "https://www.linkedin.com/in/alex",
+  shipping: {
+    line1: "1 Lane",
+    line2: "Suite 2" as string | null,
+    city: "Prague",
+    postal: "11000",
+    country: "Czechia",
+  },
   tshirtSize: "M",
   merchGender: "unisex" as const,
-  linkedinUrl: "https://www.linkedin.com/in/alex",
   projectsDescription: "Shipping agents to prod.",
 };
 

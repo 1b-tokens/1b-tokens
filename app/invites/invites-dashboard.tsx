@@ -16,6 +16,16 @@ function formatDate(iso: string) {
   }
 }
 
+function statusText(status: InviteListRow["status"]) {
+  return status === "pending"
+    ? "Awaiting application"
+    : "Application received";
+}
+
+function statusClassName(status: InviteListRow["status"]) {
+  return status === "pending" ? "text-orange" : "text-paper/70";
+}
+
 type Props = {
   initialInvites: InviteListRow[];
   canSendInvites: boolean;
@@ -77,7 +87,7 @@ export function InvitesDashboard({ initialInvites, canSendInvites }: Props) {
 
   return (
     <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-start">
-      <section className="border border-white/12 bg-midnight-soft p-6 sm:p-8">
+      <section className="min-w-0 border border-white/12 bg-midnight-soft p-5 sm:p-8">
         <h2 className="text-lg font-bold uppercase tracking-[-0.02em] text-paper">
           Your invites
         </h2>
@@ -91,54 +101,94 @@ export function InvitesDashboard({ initialInvites, canSendInvites }: Props) {
           </p>
         ) : null}
 
-        <div className="mt-6 overflow-x-auto">
-          <table className="min-w-full text-left text-sm text-paper/80">
-            <thead className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange">
-              <tr>
-                <th className="pb-3 pr-4">Name</th>
-                <th className="pb-3 pr-4">Email</th>
-                <th className="pb-3 pr-4">Status</th>
-                <th className="pb-3">Sent</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {invites.length === 0 ? (
-                <tr>
-                  <td className="py-6 text-paper/55" colSpan={4}>
-                    {canSendInvites
-                      ? "No invites yet. Send your first one from the form."
-                      : "No invites yet. After you complete your own application from an invite link, you can send invites here."}
-                  </td>
-                </tr>
-              ) : (
-                invites.map((invite) => (
-                  <tr key={invite.id}>
-                    <td className="py-3 pr-4 font-bold text-paper">
-                      {invite.invitee_full_name}
-                    </td>
-                    <td className="py-3 pr-4">{invite.invitee_email}</td>
-                    <td className="py-3 pr-4">
-                      <span
-                        className={
-                          invite.status === "pending"
-                            ? "text-orange"
-                            : "text-paper/70"
-                        }
+        {invites.length === 0 ? (
+          <p className="mt-6 text-sm text-paper/55">
+            {canSendInvites
+              ? "No invites yet. Send your first one from the form."
+              : "No invites yet. After you complete your own application from an invite link, you can send invites here."}
+          </p>
+        ) : (
+          <>
+            <ul className="mt-6 flex min-w-0 flex-col gap-3 md:hidden" role="list">
+              {invites.map((invite) => (
+                <li
+                  key={invite.id}
+                  className="min-w-0 rounded border border-white/10 bg-midnight/40 p-4"
+                >
+                  <div className="min-w-0 space-y-3 text-sm text-paper/80">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange">
+                        Name
+                      </p>
+                      <p className="mt-1 min-w-0 break-words font-bold text-paper">
+                        {invite.invitee_full_name}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange">
+                        Email
+                      </p>
+                      <p className="mt-1 min-w-0 [overflow-wrap:anywhere] break-words text-paper/90">
+                        {invite.invitee_email}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange">
+                        Status
+                      </p>
+                      <p
+                        className={`mt-1 font-medium ${statusClassName(invite.status)}`}
                       >
-                        {invite.status === "pending"
-                          ? "Awaiting application"
-                          : "Application received"}
-                      </span>
-                    </td>
-                    <td className="py-3 text-xs text-paper/55">
-                      {formatDate(invite.created_at)}
-                    </td>
+                        {statusText(invite.status)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange">
+                        Sent
+                      </p>
+                      <p className="mt-1 text-xs text-paper/60">
+                        {formatDate(invite.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6 hidden min-w-0 overflow-x-auto md:block">
+              <table className="w-full min-w-0 text-left text-sm text-paper/80">
+                <thead className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange">
+                  <tr>
+                    <th className="w-[20%] pb-3 pr-3 align-bottom">Name</th>
+                    <th className="w-[32%] pb-3 pr-3 align-bottom">Email</th>
+                    <th className="w-[22%] pb-3 pr-3 align-bottom">Status</th>
+                    <th className="pb-3 align-bottom">Sent</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {invites.map((invite) => (
+                    <tr key={invite.id}>
+                      <td className="py-3 pr-3 align-top font-bold break-words text-paper">
+                        {invite.invitee_full_name}
+                      </td>
+                      <td className="min-w-0 py-3 pr-3 align-top [overflow-wrap:anywhere] break-words">
+                        {invite.invitee_email}
+                      </td>
+                      <td className="min-w-[10rem] py-3 pr-3 align-top">
+                        <span className={statusClassName(invite.status)}>
+                          {statusText(invite.status)}
+                        </span>
+                      </td>
+                      <td className="min-w-[9rem] whitespace-nowrap py-3 text-xs text-paper/55">
+                        {formatDate(invite.created_at)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </section>
 
       <section className="border border-orange/35 bg-paper p-6 text-midnight sm:p-8">
