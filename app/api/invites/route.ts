@@ -2,7 +2,10 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 
-import { MAX_PENDING_INVITES_PER_USER } from "@/lib/invites/constants";
+import {
+  isUnrestrictedInviteAdmin,
+  MAX_PENDING_INVITES_PER_USER,
+} from "@/lib/invites/constants";
 import { hasSubmittedClubApplication } from "@/lib/invites/has-submitted-club-application";
 import { parseCreateInviteBody } from "@/lib/invites/parse-create-invite-body";
 import { sendInviteEmail } from "@/lib/invites/send-invite-email";
@@ -42,11 +45,15 @@ export async function POST(request: Request) {
   }
 
   let canInvite: boolean;
-  try {
-    canInvite = await hasSubmittedClubApplication(userId);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Lookup failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+  if (isUnrestrictedInviteAdmin(userId)) {
+    canInvite = true;
+  } else {
+    try {
+      canInvite = await hasSubmittedClubApplication(userId);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Lookup failed";
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
   }
 
   if (!canInvite) {
@@ -84,7 +91,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: countError.message }, { status: 500 });
   }
 
-  if ((count ?? 0) >= MAX_PENDING_INVITES_PER_USER) {
+  if (
+    !isUnrestrictedInviteAdmin(userId) &&
+    (count ?? 0) >= MAX_PENDING_INVITES_PER_USER
+  ) {
     return NextResponse.json(
       {
         error: `You can have at most ${MAX_PENDING_INVITES_PER_USER} open invites at a time. Wait for an application to be submitted or contact support to raise your limit.`,

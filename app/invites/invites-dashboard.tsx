@@ -29,9 +29,15 @@ function statusClassName(status: InviteListRow["status"]) {
 type Props = {
   initialInvites: InviteListRow[];
   canSendInvites: boolean;
+  /** No application gate and no open-invite cap (server-enforced allowlist). */
+  unrestrictedInvites?: boolean;
 };
 
-export function InvitesDashboard({ initialInvites, canSendInvites }: Props) {
+export function InvitesDashboard({
+  initialInvites,
+  canSendInvites,
+  unrestrictedInvites = false,
+}: Props) {
   const [invites, setInvites] = useState<InviteListRow[]>(initialInvites);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -82,7 +88,8 @@ export function InvitesDashboard({ initialInvites, canSendInvites }: Props) {
     await refreshFromApi();
   }
 
-  const atLimit = pendingCount >= MAX_PENDING_INVITES_PER_USER;
+  const atLimit =
+    !unrestrictedInvites && pendingCount >= MAX_PENDING_INVITES_PER_USER;
   const formDisabled = atLimit || !canSendInvites;
 
   return (
@@ -92,7 +99,13 @@ export function InvitesDashboard({ initialInvites, canSendInvites }: Props) {
           Your invites
         </h2>
         <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-paper/45">
-          Open: {pendingCount} / {MAX_PENDING_INVITES_PER_USER}
+          {unrestrictedInvites ? (
+            <>Open invites: {pendingCount} (no cap)</>
+          ) : (
+            <>
+              Open: {pendingCount} / {MAX_PENDING_INVITES_PER_USER}
+            </>
+          )}
         </p>
 
         {loadError ? (

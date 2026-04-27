@@ -123,7 +123,7 @@ describe("POST /api/invites", () => {
     } as never);
     vi.mocked(hasSubmittedClubApplication).mockResolvedValue(true);
     vi.mocked(createAdminClient).mockReturnValue({
-      from: vi.fn().mockReturnValue(makeCountBuilder(3)),
+      from: vi.fn().mockReturnValue(makeCountBuilder(99)),
     } as never);
 
     const res = await POST(
@@ -166,6 +166,40 @@ describe("POST /api/invites", () => {
     expect(res.status).toBe(403);
     const json = await res.json();
     expect(json.error).toMatch(/application/i);
+  });
+
+  it("does not require application and skips open-invite cap for unrestricted admin", async () => {
+    const adminId = "user_3Cwq9euobZ767F22wNosr3nddIS";
+    vi.mocked(auth).mockResolvedValue({ userId: adminId } as never);
+    vi.mocked(currentUser).mockResolvedValue({
+      firstName: "Admin",
+      lastName: "User",
+      username: null,
+      primaryEmailAddress: { emailAddress: "admin@example.com" },
+      emailAddresses: [],
+    } as never);
+    const from = vi
+      .fn()
+      .mockImplementationOnce(() => makeCountBuilder(200))
+      .mockImplementationOnce(() => makeInsertBuilder("inv-1"));
+    vi.mocked(createAdminClient).mockReturnValue({ from } as never);
+    vi.mocked(sendInviteEmail).mockResolvedValue(undefined);
+
+    const res = await POST(
+      new Request("http://localhost/api/invites", {
+        method: "POST",
+        body: JSON.stringify({
+          fullName: "Name",
+          email: "a@b.co",
+          pitch: "x".repeat(20),
+        }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(hasSubmittedClubApplication).not.toHaveBeenCalled();
+    expect(sendInviteEmail).toHaveBeenCalledOnce();
   });
 
   it("creates invite and sends email on success", async () => {
