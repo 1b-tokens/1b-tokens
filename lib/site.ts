@@ -20,4 +20,4 @@ export const siteTitle = "One Billion Tokens Club";
 export const siteTitleShort = "1B TOKENS";
 
 export const siteDescription =
-  "Private invite-only club for AI builders creating real systems, running serious workflows, and earning access to the room.";
+  "The club for people who see a billion tokens and think: FINALLY.";
