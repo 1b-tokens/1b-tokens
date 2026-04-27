@@ -11,8 +11,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    name: Test (invites)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
+
   deploy:
     name: Deploy to Cloud Run
+    needs: test
     runs-on: ubuntu-latest
     environment: Prod
     permissions:
@@ -41,10 +61,12 @@ jobs:
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL }}" \
+            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
             --tag "${IMAGE}" \
             .
           docker push "${IMAGE}"
 
+      # Runtime env: GitHub Prod → secrets (API keys) + variables (e.g. SENDGRID_FROM_EMAIL).
       - name: Deploy Cloud Run service
         env:
           IMAGE: ${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}
@@ -57,4 +79,4 @@ jobs:
             --service-account="${{ vars.RUNTIME_SERVICE_ACCOUNT }}" \
             --allow-unauthenticated \
             --port=8080 \
-            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }}"
+            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }},NEXT_PUBLIC_APP_URL=${{ vars.NEXT_PUBLIC_SITE_URL }},NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }},CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }},SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }},SENDGRID_FROM_EMAIL=${{ vars.SENDGRID_FROM_EMAIL }},ADMIN_EMAIL=${{ vars.ADMIN_EMAIL }}"

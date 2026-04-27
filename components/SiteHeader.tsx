@@ -1,3 +1,5 @@
+import { ClerkAuthControls } from "@/components/ClerkAuthControls";
+
 export function SiteHeader() {
   return (
     <header className="border-b border-white/10 bg-midnight text-paper">
@@ -16,21 +18,7 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center justify-end gap-4">
-          <div
-            className="grid size-9 place-items-center rounded-full border border-orange text-orange"
-            aria-hidden
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M3 12h18M12 3c2.4 2.7 3.6 5.7 3.6 9S14.4 18.3 12 21M12 3C9.6 5.7 8.4 8.7 8.4 12S9.6 18.3 12 21" />
-            </svg>
-          </div>
+          <ClerkAuthControls />
           <p className="hidden text-right text-[10px] font-bold uppercase tracking-[0.24em] text-orange sm:block">
             Invite only
           </p>

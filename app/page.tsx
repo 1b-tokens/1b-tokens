@@ -1,4 +1,5 @@
 import { MediaPlaceholder } from "@/components/MediaPlaceholder";
+import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import type { Metadata } from "next";
 
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  await auth();
   const signals = [
     { title: "Build systems", detail: "Outputs over prompts" },
     { title: "Explore together", detail: "Small rooms, real laptops" },

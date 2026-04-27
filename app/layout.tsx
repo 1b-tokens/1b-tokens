@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import {
@@ -63,33 +64,35 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full scroll-smooth`}>
       <body className="min-h-full antialiased">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border focus:border-orange focus:bg-paper focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-midnight"
-        >
-          Skip to content
-        </a>
-        <SiteHeader />
-        {children}
-        <footer className="border-t border-white/10 bg-midnight px-5 py-8 text-paper sm:px-8">
-          <div className="mx-auto flex max-w-[var(--content-max)] flex-col gap-3 text-xs font-bold uppercase tracking-[0.16em] text-paper/55 sm:flex-row sm:items-center sm:justify-between">
-            <p>Copyright Juhas Digital Services s.r.o. 2026</p>
-            <a
-              href="https://michaljuhas.com"
-              className="text-orange underline decoration-orange/40 underline-offset-4 transition-colors hover:text-paper"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Contact: michaljuhas.com
-            </a>
-          </div>
-        </footer>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationJsonLd),
-          }}
-        />
+        <ClerkProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border focus:border-orange focus:bg-paper focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-midnight"
+          >
+            Skip to content
+          </a>
+          <SiteHeader />
+          {children}
+          <footer className="border-t border-white/10 bg-midnight px-5 py-8 text-paper sm:px-8">
+            <div className="mx-auto flex max-w-[var(--content-max)] flex-col gap-3 text-xs font-bold uppercase tracking-[0.16em] text-paper/55 sm:flex-row sm:items-center sm:justify-between">
+              <p>Copyright Juhas Digital Services s.r.o. 2026</p>
+              <a
+                href="https://michaljuhas.com"
+                className="text-orange underline decoration-orange/40 underline-offset-4 transition-colors hover:text-paper"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Contact: michaljuhas.com
+              </a>
+            </div>
+          </footer>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(organizationJsonLd),
+            }}
+          />
+        </ClerkProvider>
       </body>
     </html>
   );
