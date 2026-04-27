@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 
+import { hasSubmittedClubApplication } from "@/lib/invites/has-submitted-club-application";
 import { listInvitesForUser } from "@/lib/invites/list-invites-for-user";
 
 import { InvitesDashboard } from "./invites-dashboard";
@@ -14,9 +15,15 @@ export const metadata: Metadata = {
 
 export default async function InvitesPage() {
   const { userId } = await auth();
+  let canSendInvites = false;
   let initialInvites: Awaited<ReturnType<typeof listInvitesForUser>> = [];
 
   if (userId) {
+    try {
+      canSendInvites = await hasSubmittedClubApplication(userId);
+    } catch {
+      canSendInvites = false;
+    }
     try {
       initialInvites = await listInvitesForUser(userId);
     } catch {
@@ -43,7 +50,10 @@ export default async function InvitesPage() {
         </p>
       </header>
 
-      <InvitesDashboard initialInvites={initialInvites} />
+      <InvitesDashboard
+        initialInvites={initialInvites}
+        canSendInvites={canSendInvites}
+      />
     </main>
   );
 }

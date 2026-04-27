@@ -9,6 +9,10 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),
 }));
 
+vi.mock("@/lib/invites/has-submitted-club-application", () => ({
+  hasSubmittedClubApplication: vi.fn(),
+}));
+
 vi.mock("@/lib/invites/send-invite-email", () => ({
   sendInviteEmail: vi.fn(),
 }));
@@ -19,6 +23,7 @@ vi.mock("nanoid", () => ({
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { GET, POST } from "@/app/api/invites/route";
+import { hasSubmittedClubApplication } from "@/lib/invites/has-submitted-club-application";
 import { sendInviteEmail } from "@/lib/invites/send-invite-email";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -41,6 +46,7 @@ function makeInsertBuilder(id: string) {
     }),
   };
 }
+
 
 describe("GET /api/invites", () => {
   beforeEach(() => {
@@ -108,6 +114,14 @@ describe("POST /api/invites", () => {
 
   it("returns 409 when at invite limit", async () => {
     vi.mocked(auth).mockResolvedValue({ userId: "user_1" } as never);
+    vi.mocked(currentUser).mockResolvedValue({
+      firstName: "Inviter",
+      lastName: "One",
+      username: null,
+      primaryEmailAddress: null,
+      emailAddresses: [],
+    } as never);
+    vi.mocked(hasSubmittedClubApplication).mockResolvedValue(true);
     vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnValue(makeCountBuilder(3)),
     } as never);
@@ -127,6 +141,33 @@ describe("POST /api/invites", () => {
     expect(sendInviteEmail).not.toHaveBeenCalled();
   });
 
+  it("returns 403 when user has not submitted the club application", async () => {
+    vi.mocked(auth).mockResolvedValue({ userId: "user_1" } as never);
+    vi.mocked(currentUser).mockResolvedValue({
+      firstName: "Inviter",
+      lastName: "One",
+      username: null,
+      primaryEmailAddress: null,
+      emailAddresses: [],
+    } as never);
+    vi.mocked(hasSubmittedClubApplication).mockResolvedValue(false);
+
+    const res = await POST(
+      new Request("http://localhost/api/invites", {
+        method: "POST",
+        body: JSON.stringify({
+          fullName: "Name",
+          email: "a@b.co",
+          pitch: "x".repeat(20),
+        }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toMatch(/application/i);
+  });
+
   it("creates invite and sends email on success", async () => {
     vi.mocked(auth).mockResolvedValue({ userId: "user_1" } as never);
     vi.mocked(currentUser).mockResolvedValue({
@@ -136,6 +177,7 @@ describe("POST /api/invites", () => {
       primaryEmailAddress: null,
       emailAddresses: [],
     } as never);
+    vi.mocked(hasSubmittedClubApplication).mockResolvedValue(true);
 
     const from = vi
       .fn()

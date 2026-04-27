@@ -18,9 +18,10 @@ function formatDate(iso: string) {
 
 type Props = {
   initialInvites: InviteListRow[];
+  canSendInvites: boolean;
 };
 
-export function InvitesDashboard({ initialInvites }: Props) {
+export function InvitesDashboard({ initialInvites, canSendInvites }: Props) {
   const [invites, setInvites] = useState<InviteListRow[]>(initialInvites);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -72,6 +73,7 @@ export function InvitesDashboard({ initialInvites }: Props) {
   }
 
   const atLimit = pendingCount >= MAX_PENDING_INVITES_PER_USER;
+  const formDisabled = atLimit || !canSendInvites;
 
   return (
     <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-start">
@@ -103,7 +105,9 @@ export function InvitesDashboard({ initialInvites }: Props) {
               {invites.length === 0 ? (
                 <tr>
                   <td className="py-6 text-paper/55" colSpan={4}>
-                    No invites yet. Send your first one from the form.
+                    {canSendInvites
+                      ? "No invites yet. Send your first one from the form."
+                      : "No invites yet. After you complete your own application from an invite link, you can send invites here."}
                   </td>
                 </tr>
               ) : (
@@ -155,7 +159,7 @@ export function InvitesDashboard({ initialInvites }: Props) {
             <input
               name="fullName"
               required
-              disabled={atLimit}
+              disabled={formDisabled}
               className="border border-midnight/15 bg-white px-3 py-2 text-sm text-midnight outline-none ring-orange focus:ring-2 disabled:opacity-50"
             />
           </div>
@@ -167,7 +171,7 @@ export function InvitesDashboard({ initialInvites }: Props) {
               name="email"
               type="email"
               required
-              disabled={atLimit}
+              disabled={formDisabled}
               className="border border-midnight/15 bg-white px-3 py-2 text-sm text-midnight outline-none ring-orange focus:ring-2 disabled:opacity-50"
             />
           </div>
@@ -180,7 +184,7 @@ export function InvitesDashboard({ initialInvites }: Props) {
               required
               rows={5}
               minLength={20}
-              disabled={atLimit}
+              disabled={formDisabled}
               placeholder="What are they building? Why should they join our VIP events? How do they show up for other builders?"
               className="border border-midnight/15 bg-white px-3 py-2 text-sm text-midnight outline-none ring-orange focus:ring-2 disabled:opacity-50"
             />
@@ -192,7 +196,13 @@ export function InvitesDashboard({ initialInvites }: Props) {
             </p>
           ) : null}
 
-          {atLimit ? (
+          {!canSendInvites ? (
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-midnight/60">
+              You can send invites only after you submit the club application
+              from your own invite link. This page is visible before that so you
+              can see the flow.
+            </p>
+          ) : atLimit ? (
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-midnight/55">
               You already have {MAX_PENDING_INVITES_PER_USER} open invites.
               Wait until someone submits their application before sending more.
@@ -201,7 +211,7 @@ export function InvitesDashboard({ initialInvites }: Props) {
 
           <button
             type="submit"
-            disabled={submitting || atLimit}
+            disabled={submitting || formDisabled}
             className="w-full cursor-pointer rounded border border-midnight bg-midnight py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-paper transition-colors hover:bg-midnight/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? "Sending…" : "Send invite email"}
