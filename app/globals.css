@@ -40,3 +40,8 @@ body {
 a {
   color: inherit;
 }
+
+/* Keep public login invite-only while preserving signup from invite pages. */
+.cl-signIn-root .cl-footerAction {
+  display: none;
+}
