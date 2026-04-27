@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import {
   isUnrestrictedInviteAdmin,
-  MAX_PENDING_INVITES_PER_USER,
+  maxPendingInvitesForClerkUser,
 } from "@/lib/invites/constants";
 import { hasSubmittedClubApplication } from "@/lib/invites/has-submitted-club-application";
 import { parseCreateInviteBody } from "@/lib/invites/parse-create-invite-body";
@@ -91,13 +91,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: countError.message }, { status: 500 });
   }
 
-  if (
-    !isUnrestrictedInviteAdmin(userId) &&
-    (count ?? 0) >= MAX_PENDING_INVITES_PER_USER
-  ) {
+  const maxPending = maxPendingInvitesForClerkUser(userId);
+  if ((count ?? 0) >= maxPending) {
     return NextResponse.json(
       {
-        error: `You can have at most ${MAX_PENDING_INVITES_PER_USER} open invites at a time. Wait for an application to be submitted or contact support to raise your limit.`,
+        error: `You can have at most ${maxPending} open invites at a time. Wait for an application to be submitted or contact support to raise your limit.`,
       },
       { status: 409 },
     );

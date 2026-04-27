@@ -1,7 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 
-import { isUnrestrictedInviteAdmin } from "@/lib/invites/constants";
+import {
+  isUnrestrictedInviteAdmin,
+  maxPendingInvitesForClerkUser,
+} from "@/lib/invites/constants";
 import { hasSubmittedClubApplication } from "@/lib/invites/has-submitted-club-application";
 import { listInvitesForUser } from "@/lib/invites/list-invites-for-user";
 
@@ -49,9 +52,10 @@ export default async function InvitesPage() {
           Invites
         </h1>
         <p className="mt-4 text-sm font-medium leading-relaxed text-paper/65">
-          Membership is invite-only. You can have up to 99 open invites at a
-          time. Each person receives an email with a private link to read about
-          the club and submit a free application.
+          Membership is invite-only. You can have up to{" "}
+          {maxPendingInvitesForClerkUser(userId)} open invites at a time. Each
+          person receives an email with a private link to read about the club
+          and submit a free application.
         </p>
       </header>
 
@@ -61,6 +65,7 @@ export default async function InvitesPage() {
         unrestrictedInvites={
           userId != null && isUnrestrictedInviteAdmin(userId)
         }
+        maxPendingInvites={maxPendingInvitesForClerkUser(userId)}
       />
     </main>
   );

@@ -64,7 +64,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full scroll-smooth`}>
       <body className="min-h-full antialiased">
-        <ClerkProvider>
+        <ClerkProvider
+          appearance={{
+            elements: {
+              footerAction: "hidden",
+            },
+          }}
+        >
           <a
             href="#main"
             className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border focus:border-orange focus:bg-paper focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-midnight"

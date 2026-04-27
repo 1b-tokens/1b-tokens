@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 
-import { MAX_PENDING_INVITES_PER_USER } from "@/lib/invites/constants";
 import type { InviteListRow } from "@/lib/invites/list-invites-for-user";
 
 function formatDate(iso: string) {
@@ -29,14 +28,17 @@ function statusClassName(status: InviteListRow["status"]) {
 type Props = {
   initialInvites: InviteListRow[];
   canSendInvites: boolean;
-  /** No application gate and no open-invite cap (server-enforced allowlist). */
+  /** No application gate; higher open-invite cap (server-enforced allowlist). */
   unrestrictedInvites?: boolean;
+  /** Server-aligned max open (pending) invites for this user. */
+  maxPendingInvites: number;
 };
 
 export function InvitesDashboard({
   initialInvites,
   canSendInvites,
   unrestrictedInvites = false,
+  maxPendingInvites,
 }: Props) {
   const [invites, setInvites] = useState<InviteListRow[]>(initialInvites);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -88,8 +90,7 @@ export function InvitesDashboard({
     await refreshFromApi();
   }
 
-  const atLimit =
-    !unrestrictedInvites && pendingCount >= MAX_PENDING_INVITES_PER_USER;
+  const atLimit = pendingCount >= maxPendingInvites;
   const formDisabled = atLimit || !canSendInvites;
 
   return (
@@ -99,13 +100,7 @@ export function InvitesDashboard({
           Your invites
         </h2>
         <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-paper/45">
-          {unrestrictedInvites ? (
-            <>Open invites: {pendingCount} (no cap)</>
-          ) : (
-            <>
-              Open: {pendingCount} / {MAX_PENDING_INVITES_PER_USER}
-            </>
-          )}
+          Open: {pendingCount} / {maxPendingInvites}
         </p>
 
         {loadError ? (
@@ -267,8 +262,8 @@ export function InvitesDashboard({
             </p>
           ) : atLimit ? (
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-midnight/55">
-              You already have {MAX_PENDING_INVITES_PER_USER} open invites.
-              Wait until someone submits their application before sending more.
+              You already have {maxPendingInvites} open invites. Wait until
+              someone submits their application before sending more.
             </p>
           ) : null}
 
