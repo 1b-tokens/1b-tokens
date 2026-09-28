@@ -2,7 +2,7 @@ export function ClubAccordion() {
   const items = [
     {
       title: "What is the 1B Tokens Club?",
-      body: "A private, invite-only network of AI builders who ship real systems — products, workflows, and organizations — not slides or hot takes. We meet in small rooms across Europe: getaways, hikes, and retreats where laptops are open and proof matters more than opinions.",
+      body: "A private, invite-only network of AI builders who ship real systems — products, workflows, and organizations — not slides or hot takes. We meet in small rooms across Europe for professional knowledge exchange: members demo what they're building, compare approaches, and share what actually works in production. Laptops open, proof over opinions.",
     },
     {
       title: "Why we exist",
@@ -14,7 +14,7 @@ export function ClubAccordion() {
     },
     {
       title: "VIP events & merch",
-      body: "Members get access to intimate builder weekends and limited drops tied to real moments — not a public storefront. Welcome merch is part of the ritual: proof you were in the room when something shipped.",
+      body: "Members get access to invite-only knowledge-exchange sessions and limited drops tied to real moments — not a public storefront. Welcome merch is part of the ritual: proof you were in the room when something shipped.",
     },
   ];
 

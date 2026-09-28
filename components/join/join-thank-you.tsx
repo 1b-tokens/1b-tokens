@@ -9,8 +9,8 @@ export function JoinThankYou(props: { name: string }) {
       </h1>
       <p className="mt-6 max-w-2xl text-sm font-medium leading-relaxed text-paper/80">
         We received your application and saved your shipping details. We&apos;ll
-        email you soon with logistics for upcoming builder weekends, hikes, and
-        member drops — keep an eye on your inbox (and spam, just in case).
+        email you soon with details on upcoming invite-only knowledge-exchange
+        sessions and member drops — keep an eye on your inbox (and spam, just in case).
       </p>
     </section>
   );

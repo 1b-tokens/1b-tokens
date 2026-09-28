@@ -204,8 +204,8 @@ export function InvitesDashboard({
           Send a new invite
         </h2>
         <p className="mt-3 text-sm font-medium leading-relaxed text-midnight/70">
-          Tell us who deserves a seat. Why should this person join our VIP
-          builder weekends? What are they shipping that raises the bar for
+          Tell us who deserves a seat. Why should this person join our invite-only
+          knowledge-exchange sessions? What are they shipping that raises the bar for
           everyone in the room?
         </p>
 

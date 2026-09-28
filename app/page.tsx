@@ -19,12 +19,6 @@ export default async function HomePage() {
   ];
 
   const standards = ["Build > Talk", "Systems running", "No spectators"];
-  const itinerary = [
-    "01_Czechia / May 2026 / Getaway",
-    "02_Poland / June 2026 / Getaway",
-    "03_Slovenia / July 2026 / Hike",
-    "04_Croatia / Aug 2026 / Retreat",
-  ];
 
   return (
     <main
@@ -114,7 +108,7 @@ export default async function HomePage() {
               </div>
               <p className="mt-10 max-w-md text-sm font-medium leading-relaxed text-midnight/62">
                 The merch is not a product line. It is proof you were in the
-                room, on the hike, in the build, at the moment.
+                room, in the demo, in the build, at the moment.
               </p>
             </div>
 
@@ -171,14 +165,14 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section aria-labelledby="getaways-heading">
-          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-            <div className="border border-white/12 bg-midnight-soft p-6 sm:p-8">
+        <section aria-labelledby="events-heading">
+          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
+            <div className="flex flex-col border border-white/12 bg-midnight-soft p-6 sm:p-8">
               <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-orange">
-                Upcoming runs / hikes / retreats
+                Upcoming invite-only events
               </p>
               <h2
-                id="getaways-heading"
+                id="events-heading"
                 className="mt-5 text-4xl font-bold uppercase leading-[0.9] tracking-[-0.07em] text-paper sm:text-6xl"
               >
                 Weekend rooms across Europe.
@@ -193,23 +187,30 @@ export default async function HomePage() {
                   real insight.
                 </p>
               </div>
+              <p className="mt-8 border-l-2 border-orange pl-4 text-xs font-bold uppercase leading-relaxed tracking-[0.16em] text-paper lg:mt-auto">
+                Dates and locations are shared with members by invitation
+                only.
+              </p>
             </div>
 
-            <div className="grid gap-px border border-white/12 bg-white/12 sm:grid-cols-2">
-              {itinerary.map((item) => (
-                <div key={item} className="bg-paper p-6 text-midnight">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange">
-                    {item.split(" / ")[0]}
-                  </p>
-                  <p className="mt-8 text-2xl font-bold uppercase leading-none tracking-[-0.05em]">
-                    {item.split(" / ")[2]}
-                  </p>
-                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-midnight/50">
-                    {item.split(" / ")[1]}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <figure className="relative overflow-hidden border border-white/12 bg-midnight-soft">
+              <Image
+                src="/michal-juhas-1b-tokens-club.jpg"
+                alt="Michal Juhas wearing a navy 1B Tokens hoodie"
+                width={1536}
+                height={2048}
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="aspect-[4/5] h-full w-full object-cover object-[center_35%]"
+              />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-midnight/90 to-transparent p-6 pt-16">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange">
+                  Michal Juhas
+                </p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-paper/70">
+                  1B Tokens Club
+                </p>
+              </figcaption>
+            </figure>
           </div>
         </section>
 
